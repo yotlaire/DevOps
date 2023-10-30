@@ -1,0 +1,45 @@
+---
+- name: Configure Jenkins Server
+  hosts: jenkins
+  tasks:
+    - name: Install Java Requirements
+      apt:
+        update_cache: yes
+        name: default-jdk
+      become: yes
+
+    - name: Add Jenkins APT key
+      get_url:
+        url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+        dest: /usr/share/keyrings/jenkins-keyring.asc
+        mode: '0644'
+        owner: root
+        group: root
+      become: yes
+
+    - name: Add Jenkins APT repository
+      apt_repository:
+        repo: 'deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/'
+        state: present
+      become: yes
+
+    - name: Update package cache
+      apt:
+        update_cache: yes
+      become: yes
+
+    - name: Install Jenkins
+      apt:
+        name: jenkins
+        state: present
+        default_release: jammy  # Replace with the appropriate release name
+        install_recommends: no
+        allow_unauthenticated: yes
+      become: yes
+
+    - name: Start Jenkins service
+      service:
+        name: jenkins
+        state: started
+        enabled: yes
+      become: yes
